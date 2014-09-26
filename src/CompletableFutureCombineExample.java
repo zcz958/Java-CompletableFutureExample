@@ -1,7 +1,29 @@
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
-class CompletableFutureExample {
+public class CompletableFutureCombineExample {
+
+  public static class UserInfo {
+    private int userId;
+    private UserName name;
+    private UserPhone phone;
+
+    public void setUserId(int userId) {
+      this.userId = userId;
+    }
+
+    public void setName(UserName name) {
+      this.name = name;
+    }
+
+    public void setPhone(UserPhone phone) {
+      this.phone = phone;
+    }
+
+    @Override
+    public String toString() {
+      return String.format("User info: id = %d  Name: %s  Phone: %s", userId, name.getName(), phone.getPhone());
+    }
+  }
 
   public static class UserName {
     private String name;
@@ -23,7 +45,7 @@ class CompletableFutureExample {
     }
 
     public String getPhone() {
-       return phone;
+      return phone;
     }
   }
 
@@ -31,13 +53,13 @@ class CompletableFutureExample {
 
     CompletableFuture<UserName> userName = CompletableFuture.supplyAsync(() ->
       {
-        System.out.println("Creating name");
+        System.out.println("Creating userName");
         return new UserName();
       }
     ).thenComposeAsync((UserName name) -> CompletableFuture.supplyAsync(() ->
       {
         try {
-          Thread.sleep(1000); // sleep to show async behavior
+          Thread.sleep(1000);
         } catch (InterruptedException e) {
           System.out.println(e.getMessage());
         }
@@ -61,9 +83,19 @@ class CompletableFutureExample {
       }
     ));
 
-    UserName name = userName.get(1500, TimeUnit.MILLISECONDS);
-    UserPhone phone = userPhone.get();
+    CompletableFuture<UserInfo> userInfo = userName.thenCombine(userPhone, (UserName name, UserPhone phone) ->
+      {
+        System.out.println("Combine user and phone");
+        UserInfo user = new UserInfo();
+        user.setUserId(1);
+        user.setName(name);
+        user.setPhone(phone);
 
-    System.out.println("Done! name: " + name.getName() + " phone: " + phone.getPhone());
+        return user;
+      }
+    );
+
+    UserInfo result = userInfo.get();
+    System.out.println("Done: " + result.toString());
   }
 }
