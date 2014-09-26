@@ -90,7 +90,6 @@ public class CompletableFutureCombineExample {
         user.setUserId(1);
         user.setName(name);
         user.setPhone(phone);
-
         return user;
       }
     );
